@@ -1,0 +1,21 @@
+{
+	"name": "trip_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_storage_account",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "silver/trip_data_green",
+				"fileSystem": "nyc-taxi"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

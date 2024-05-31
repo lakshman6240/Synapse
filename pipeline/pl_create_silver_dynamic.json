@@ -1,0 +1,100 @@
+{
+	"name": "pl_create_silver_dynamic",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('details')",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Delete table",
+							"type": "Delete",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "silver_dataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"p_folder_name": {
+											"value": "@item().folder",
+											"type": "Expression"
+										}
+									}
+								},
+								"enableLogging": false,
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								}
+							}
+						},
+						{
+							"name": "create data usp",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Delete table",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": {
+									"value": "@item().usp",
+									"type": "Expression"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "ls_AzureSynapseAnalytics",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"details": {
+				"type": "Array",
+				"defaultValue": [
+					{
+						"folder": "silver/taxi_zone",
+						"usp": "silver.sp_taxi_zone"
+					},
+					{
+						"folder": "silver/calendar",
+						"usp": "silver.calendar"
+					}
+				]
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-05-28T07:30:48Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

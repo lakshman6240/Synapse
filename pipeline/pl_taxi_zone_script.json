@@ -1,0 +1,72 @@
+{
+	"name": "pl_taxi_zone_script",
+	"properties": {
+		"activities": [
+			{
+				"name": "deleting_table",
+				"type": "Delete",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "taxi_zone",
+						"type": "DatasetReference"
+					},
+					"enableLogging": false,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					}
+				}
+			},
+			{
+				"name": "Script",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "deleting_table",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "ls_AzureSynapseAnalytics",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": "IF OBJECT_ID('silver.taxi_zone') is NOT NULL\n    DROP EXTERNAL TABLE silver.taxi_zone"
+						},
+						{
+							"type": "NonQuery",
+							"text": "CREATE EXTERNAL TABLE silver.taxi_zone\nWITH(\n    LOCATION = 'silver/taxi_zone',\n    DATA_SOURCE = nyc_taxi_src,\n    FILE_FORMAT = parquet_file_format\n)\nAS\nSELECT * from bronze.taxi_zone"
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-05-27T09:20:59Z"
+	},
+	"type": "Microsoft.Synapse/workspaces/pipelines"
+}

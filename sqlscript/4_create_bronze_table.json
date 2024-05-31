@@ -1,0 +1,20 @@
+{
+	"name": "4_create_bronze_table",
+	"properties": {
+		"folder": {
+			"name": "nyc_taxi/external_tables"
+		},
+		"content": {
+			"query": "use nyc_taxi_ldw;\n\nIF OBJECT_ID('bronze.taxi_zone') is NOT NULL\n    DROP EXTERNAL TABLE bronze.taxi_zone\n\nCREATE EXTERNAL TABLE bronze.taxi_zone\n    (\n        LocationID SMALLINT ,\n        Borough VARCHAR(15) ,\n        Zone VARCHAR(50) ,\n        service_zone VARCHAR(15)\n    )\n    WITH (\n        LOCATION = 'raw/taxi_zone.csv',\n        DATA_SOURCE = nyc_taxi_src,\n        FILE_FORMAT = csv_file_format_pv_1,\n        REJECT_VALUE = 10,\n        REJECTED_ROW_LOCATION = 'reject/taxi_zone'\n    );\n\n\nIF OBJECT_ID('bronze.calendar') is NOT NULL\n    DROP EXTERNAL TABLE bronze.calendar\nGO\n\nCREATE EXTERNAL TABLE bronze.calendar\n(\n    date_key    int,\n    date        date,\n    year        smallint,\n    month       smallint,\n    day         smallint,\n    day_name    VARCHAR(10),\n    day_of_year smallint,\n    week_of_month TINYINT,\n    week_of_year TINYINT,\n    month_name  VARCHAR(10)\n)\n    WITH (\n        LOCATION = 'raw/calendar.csv',\n        DATA_SOURCE = nyc_taxi_src,\n        FILE_FORMAT = csv_file_format_pv_1,\n        REJECT_VALUE = 10,\n        REJECTED_ROW_LOCATION = 'reject/calendar'\n    );\n\nSELECT * FROM bronze.calendar;",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "nyc_taxi_ldw",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

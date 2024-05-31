@@ -1,0 +1,20 @@
+{
+	"name": "7_explore_trip_data_green",
+	"properties": {
+		"folder": {
+			"name": "nyc_taxi/discover"
+		},
+		"content": {
+			"query": "use nyc_taxi_database;\n\nSELECT * FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=2020/month=01/green_tripdata_2020-01.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\n\n-- selecting data from folder\n\nSELECT * FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=2020/month=01/*.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\n\n-- selecting data from subfolders\n\nSELECT * FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=2020/**',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\n\n-- selecting data from more than one file\n\nSELECT * FROM\nOPENROWSET(\n    BULK ('trip_data_green_csv/year=2020/month=01/*',\n    'trip_data_green_csv/year=2020/month=03/*'),\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\n\n-- using more than one wildcard\n\nSELECT * FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=*/month=*/*.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\n\n-----------------------------\n-- getting file name as well\n-----------------------------\n\nSELECT \n    trip_data.filename() as file_name,\n    trip_data.*\n FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=*/month=*/*.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\n\n-- finding the count\n\nSELECT \n    trip_data.filename() as file_name,\n    count(trip_data.filename())\n FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=*/month=*/*.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\nGROUP BY trip_data.filename()\norder by trip_data.filename()\n\n-- filtering\n\nSELECT \n    trip_data.filename() as file_name,\n    count(trip_data.filename())\n FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=*/month=*/*.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\nWHERE trip_data.filename() in ('green_tripdata_2020-01.csv','green_tripdata_2020-09.csv')\nGROUP BY trip_data.filename()\norder by trip_data.filename()\n\n-- using filepath\n\nSELECT \n    trip_data.filename() as file_name,\n    trip_data.filepath() as file_path,\n    count(trip_data.filename())\n FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=*/month=*/*.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\nWHERE trip_data.filename() in ('green_tripdata_2020-01.csv','green_tripdata_2020-09.csv')\nGROUP BY trip_data.filename(), trip_data.filepath()\norder by trip_data.filename(), trip_data.filepath()\n\n--------------------------\n\nSELECT \n    trip_data.filename() as file_name,\n    trip_data.filepath(1) as year,\n    trip_data.filepath(2) as month,\n    count(trip_data.filename())\n FROM\nOPENROWSET(\n    BULK 'trip_data_green_csv/year=*/month=*/*.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    HEADER_ROW = TRUE\n)\nas trip_data\nWHERE trip_data.filepath(1)='2020'\nand trip_data.filepath(2) in ('02','03','05')\nGROUP BY trip_data.filename(), trip_data.filepath(1), trip_data.filepath(2)\norder by trip_data.filename()",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "nyc_taxi_database",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

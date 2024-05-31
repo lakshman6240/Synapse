@@ -1,0 +1,20 @@
+{
+	"name": "7_partition_data_using_sp",
+	"properties": {
+		"folder": {
+			"name": "nyc_taxi/external_tables"
+		},
+		"content": {
+			"query": "use nyc_taxi_ldw\nGO\n\nEXEC silver.sp_trip_data_green '2020','01';\nEXEC silver.sp_trip_data_green '2020','02';\nEXEC silver.sp_trip_data_green '2020','03';\nEXEC silver.sp_trip_data_green '2020','04';\nEXEC silver.sp_trip_data_green '2020','05';\nEXEC silver.sp_trip_data_green '2020','06';\nEXEC silver.sp_trip_data_green '2020','07';\nEXEC silver.sp_trip_data_green '2020','08';\nEXEC silver.sp_trip_data_green '2020','09';\nEXEC silver.sp_trip_data_green '2020','10';\nEXEC silver.sp_trip_data_green '2020','11';\nEXEC silver.sp_trip_data_green '2020','12';\nEXEC silver.sp_trip_data_green '2021','01';\nEXEC silver.sp_trip_data_green '2021','02';\nEXEC silver.sp_trip_data_green '2021','03';\nEXEC silver.sp_trip_data_green '2021','04';\nEXEC silver.sp_trip_data_green '2021','05';\nEXEC silver.sp_trip_data_green '2021','06'\nGO\n\nDROP VIEW IF EXISTS silver.vw_trip_data\nGO\n\ncreate VIEW silver.vw_trip_data\nAS\nSELECT \n    trip_data.year,\n    trip_data.month,\n    trip_data.VendorID\n FROM\nOPENROWSET(\n    BULK 'silver/trip_data_green/year=*/month=*/*.parquet',\n    DATA_SOURCE = 'nyc_taxi_src',\n    FORMAT = 'PARQUET'\n)\nas trip_data;\n\nSELECT * FROM silver.vw_trip_data ",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "nyc_taxi_ldw",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}

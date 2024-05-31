@@ -1,0 +1,20 @@
+{
+	"name": "12_joining",
+	"properties": {
+		"folder": {
+			"name": "nyc_taxi/discover"
+		},
+		"content": {
+			"query": "use nyc_taxi_database;\n\nSELECT\n    result.PULocationID,\n    taxi_zone.Borough\nFROM\n    OPENROWSET(\n        BULK 'trip_data_green_delta/',\n        FORMAT = 'DELTA',\n        DATA_SOURCE = 'nyc_taxi_raw'\n    )\n     AS result\n    join \nOPENROWSET(\n    BULK 'taxi_zone.csv',\n    DATA_SOURCE = 'nyc_taxi_raw',\n    FORMAT = 'CSV',\n    PARSER_VERSION = '2.0',\n    FIRSTROW = 2\n)\nwith(\n    LocationID SMALLINT 1,\n    Borough VARCHAR(15) 2,\n    Zone VARCHAR(50) 3,\n    service_zone VARCHAR(15) 4\n)\n as taxi_zone\n on taxi_zone.LocationID=result.PULocationID\n GROUP BY result.PULocationID,taxi_zone.Borough\n ORDER BY PULocationID",
+			"metadata": {
+				"language": "sql"
+			},
+			"currentConnection": {
+				"databaseName": "nyc_taxi_database",
+				"poolName": "Built-in"
+			},
+			"resultLimit": 5000
+		},
+		"type": "SqlQuery"
+	}
+}
